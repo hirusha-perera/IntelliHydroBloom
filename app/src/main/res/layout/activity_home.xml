@@ -1,9 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ActivityHome">
+    android:background="@drawable/gradient_bg"
+    android:padding="16dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Profile Section -->
+
+    <ImageView
+        android:id="@+id/profile_image"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/logo_ihb"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/profile_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_image"
+        android:text="User Name"
+        android:textSize="18sp"
+        android:layout_centerHorizontal="true" />
+
+    <!-- Tiles Section -->
+    <!-- Row 1 -->
+    <ImageView
+        android:id="@+id/tile1"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_below="@id/profile_name"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/logo_ihb" />
+
+    <ImageView
+        android:id="@+id/tile2"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_toEndOf="@id/tile1"
+        android:layout_marginStart="24dp"
+        android:layout_alignTop="@id/tile1"
+        android:src="@drawable/logo_ihb" />
+
+    <!-- Row 2 -->
+    <ImageView
+        android:id="@+id/tile3"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_below="@id/tile1"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/logo_ihb" />
+
+    <ImageView
+        android:id="@+id/tile4"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_toEndOf="@id/tile3"
+        android:layout_marginStart="24dp"
+        android:layout_alignTop="@id/tile3"
+        android:src="@drawable/logo_ihb" />
+
+    <!-- Bottom Navigation (simplified) -->
+    <LinearLayout
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <!-- Nav Item 1 -->
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/logo_ihb" />
+
+        <!-- Nav Item 2 -->
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/logo_ihb" />
+
+        <!-- Nav Item 3 -->
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/logo_ihb" />
+
+    </LinearLayout>
+
+</RelativeLayout>

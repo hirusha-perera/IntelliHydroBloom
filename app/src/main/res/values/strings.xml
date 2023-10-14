@@ -70,4 +70,13 @@
         <item>United States</item>
 
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="capture_from_camera">Capture from Camera</string>
+    <string name="displayed_plant_image">Displayed plant image</string>
+    <string name="pick_from_gallery">Pick from Gallery</string>
+    <string name="scan_plant">Scan Plant</string>
+    <string name="enter_the_email_associated_with_your_account_and_we_ll_send_an_email_with_instructions_to_reset_your_password">Enter the email associated with your account and we’ll send an email with instructions to reset your password.</string>
+    <string name="e_mail_addressfp">E-mail address</string>
+    <string name="reset_password">Reset Password</string>
 </resources>
