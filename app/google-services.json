@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "50576547623",
+    "project_id": "intelli-hydro-bloom-7b31f",
+    "storage_bucket": "intelli-hydro-bloom-7b31f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50576547623:android:08018b4b7ea7f261d95302",
+        "android_client_info": {
+          "package_name": "com.example.intellihydrobloom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTtsyViGMbJyY37n-m6QhEgCUL8vZjmF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

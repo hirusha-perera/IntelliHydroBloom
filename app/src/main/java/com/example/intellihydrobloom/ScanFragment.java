@@ -1,5 +1,6 @@
 package com.example.intellihydrobloom;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,6 +9,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.Manifest;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -33,6 +35,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScanFragment extends Fragment {
 
@@ -41,7 +45,8 @@ public class ScanFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private SimpleMatrix W_conv;
+    //private SimpleMatrix W_conv;
+    private List<SimpleMatrix> W_conv_list;
     private SimpleMatrix b_conv;
     private SimpleMatrix W_fc;
     private SimpleMatrix b_fc;
@@ -56,20 +61,23 @@ public class ScanFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static SimpleMatrix convolution(SimpleMatrix image, SimpleMatrix filter, double bias) {
-        int outputSize = image.numRows() - filter.numRows() + 1;
-        SimpleMatrix output = new SimpleMatrix(outputSize, outputSize);
-        for (int i = 0; i < outputSize; i++) {
-            for (int j = 0; j < outputSize; j++) {
-                SimpleMatrix subMatrix = image.extractMatrix(i, i + filter.numRows(), j, j + filter.numCols());
-                double value = subMatrix.elementMult(filter).elementSum() + bias;
-                output.set(i, j, value);
+    public List<SimpleMatrix> convolution(SimpleMatrix image, List<SimpleMatrix> filters, double bias) {
+        List<SimpleMatrix> outputList = new ArrayList<>();
+        for (SimpleMatrix filter : filters) {
+            int outputSize = image.numRows() - filter.numRows() + 1;
+            SimpleMatrix output = new SimpleMatrix(outputSize, outputSize);
+            for (int i = 0; i < outputSize; i++) {
+                for (int j = 0; j < outputSize; j++) {
+                    SimpleMatrix subMatrix = image.extractMatrix(i, i + filter.numRows(), j, j + filter.numCols());
+                    double value = subMatrix.elementMult(filter).elementSum() + bias;
+                    output.set(i, j, value);
+                }
             }
+            outputList.add(output);
         }
-
-
-        return output;
+        return outputList;
     }
+
     public static SimpleMatrix relu(SimpleMatrix input) {
         for (int i = 0; i < input.numRows(); i++) {
             for (int j = 0; j < input.numCols(); j++) {
@@ -103,9 +111,12 @@ public class ScanFragment extends Fragment {
     }
 
 
-    public static SimpleMatrix fullyConnected(SimpleMatrix input, SimpleMatrix weights, SimpleMatrix biases) {
+    private SimpleMatrix fullyConnected(SimpleMatrix input, SimpleMatrix weights, SimpleMatrix biases) {
+        Log.d("ScanFragment", "Input matrix dimensions: " + input.numRows() + "x" + input.numCols());
+        Log.d("ScanFragment", "Weights matrix dimensions: " + weights.numRows() + "x" + weights.numCols());
         return weights.mult(input).plus(biases);
     }
+
 
 
 
@@ -167,50 +178,56 @@ public class ScanFragment extends Fragment {
 
             // Extracting W_conv
             JSONArray W_convJSON = modelParams.getJSONArray("W_conv");
-            double[][][] W_conv = new double[W_convJSON.length()][][];
+            W_conv_list = new ArrayList<>();
             for (int i = 0; i < W_convJSON.length(); i++) {
                 JSONArray subArray = W_convJSON.getJSONArray(i);
-                W_conv[i] = new double[subArray.length()][];
+                double[][] W_conv2D = new double[subArray.length()][];
                 for (int j = 0; j < subArray.length(); j++) {
                     JSONArray subSubArray = subArray.getJSONArray(j);
-                    W_conv[i][j] = new double[subSubArray.length()];
+                    W_conv2D[j] = new double[subSubArray.length()];
                     for (int k = 0; k < subSubArray.length(); k++) {
-                        W_conv[i][j][k] = subSubArray.getDouble(k);
+                        W_conv2D[j][k] = subSubArray.getDouble(k);
                     }
                 }
-            }
+                W_conv_list.add(new SimpleMatrix(W_conv2D));
+            };
 
             // Extracting b_conv
             JSONArray b_convJSON = modelParams.getJSONArray("b_conv");
-            double[][] b_conv = new double[b_convJSON.length()][1];  // It's a 2D array
+            double[][] b_conv_temp = new double[b_convJSON.length()][1];  // It's a 2D array
             for (int i = 0; i < b_convJSON.length(); i++) {
-                b_conv[i][0] = b_convJSON.getJSONArray(i).getDouble(0);
+                b_conv_temp[i][0] = b_convJSON.getJSONArray(i).getDouble(0);
             }
+            this.b_conv = new SimpleMatrix(b_conv_temp);
 
             // Extracting W_fc
             JSONArray W_fcJSON = modelParams.getJSONArray("W_fc");
-            double[][] W_fc = new double[W_fcJSON.length()][];
+            double[][] W_fc_temp = new double[W_fcJSON.length()][];
             for (int i = 0; i < W_fcJSON.length(); i++) {
                 JSONArray subArray = W_fcJSON.getJSONArray(i);
-                W_fc[i] = new double[subArray.length()];
+                W_fc_temp[i] = new double[subArray.length()];
                 for (int j = 0; j < subArray.length(); j++) {
-                    W_fc[i][j] = subArray.getDouble(j);
+                    W_fc_temp[i][j] = subArray.getDouble(j);
                 }
             }
+            this.W_fc = new SimpleMatrix(W_fc_temp);
 
             // Extracting b_fc
             JSONArray b_fcJSON = modelParams.getJSONArray("b_fc");
-            double[][] b_fc = new double[b_fcJSON.length()][1];  // It's a 2D array
+            double[][] b_fc_temp = new double[b_fcJSON.length()][1];  // It's a 2D array
             for (int i = 0; i < b_fcJSON.length(); i++) {
-                b_fc[i][0] = b_fcJSON.getJSONArray(i).getDouble(0);
+                b_fc_temp[i][0] = b_fcJSON.getJSONArray(i).getDouble(0);
             }
+            this.b_fc = new SimpleMatrix(b_fc_temp);
 
-            // You can now use these arrays in your model operations.
+            // Model parameters are now initialized and ready for use.
 
         } catch (Exception e) {
             // Handle exceptions
+            Log.e("ScanFragment", "Error parsing model: " + e.getMessage());
         }
     }
+
 
 
 
@@ -271,13 +288,17 @@ public class ScanFragment extends Fragment {
         }
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        Log.d("ScanFragment", "Inside onActivityResult");
+
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_IMAGE_CAPTURE: {
+                    Log.d("ScanFragment", "Image captured");
                     Bundle extras = data.getExtras();
                     Bitmap imageBitmap = (Bitmap) extras.get("data");
                     ivPlantImage.setImageBitmap(imageBitmap);
@@ -285,19 +306,24 @@ public class ScanFragment extends Fragment {
                     break;
                 }
                 case REQUEST_PICK_IMAGE: {
+                    Log.d("ScanFragment", "Image picked from gallery");
                     Uri imageUri = data.getData();
                     try {
                         Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), imageUri);
                         ivPlantImage.setImageBitmap(imageBitmap);
                         preprocessAndFeedToNN(imageBitmap);
                     } catch (Exception e) {
+                        Log.d("ScanFragment", "Error processing picked image: " + e.getMessage());
                         e.printStackTrace();
                     }
                     break;
                 }
             }
+        } else {
+            Log.d("ScanFragment", "Result not OK");
         }
     }
+
     private SimpleMatrix reshape(SimpleMatrix matrix, int rows, int cols) {
         SimpleMatrix reshapedMatrix = new SimpleMatrix(rows, cols);
         int count = 0;
@@ -345,16 +371,64 @@ public class ScanFragment extends Fragment {
     private String[] categories = {"Caterpillar attacks", "Healthy", "Nutrient deficiency", "Leaf spots", "Mealybugs", "Leaf spots"};
 
     private SimpleMatrix forwardPass(SimpleMatrix input) {
-        // Implement the series of operations to get the neural network's output
+        // Check for null matrices
+        if (W_conv_list == null || b_conv == null || W_fc == null || b_fc == null) {
+            Log.e("ScanFragment", "Neural network parameters are not initialized");
+            return null;
+        }
 
-        SimpleMatrix convOutput = convolution(input, W_conv, b_conv.get(0, 0)); // Assuming W_conv is a SimpleMatrix
-        SimpleMatrix reluOutput = relu(convOutput);
-        SimpleMatrix pooledOutput = maxPooling(reluOutput, POOL_SIZE, POOL_SIZE);
-        SimpleMatrix flattenedOutput = flattenMatrix(pooledOutput);
-        SimpleMatrix fcOutput = fullyConnected(flattenedOutput, W_fc, b_fc); // Assuming W_fc and b_fc are SimpleMatrices
+        // Implement the series of operations to get the neural network's output
+        List<SimpleMatrix> convOutputs = convolution(input, W_conv_list, b_conv.get(0, 0));
+
+        // Log Convolutional Outputs dimensions
+        for (int i = 0; i < convOutputs.size(); i++) {
+            Log.d("ScanFragment", "Convolutional Output " + (i+1) + " dimensions: " + convOutputs.get(i).numRows() + "x" + convOutputs.get(i).numCols());
+        }
+
+        List<SimpleMatrix> reluOutputs = new ArrayList<>();
+        for (SimpleMatrix convOutput : convOutputs) {
+            reluOutputs.add(relu(convOutput));
+        }
+
+        // Log ReLU Outputs dimensions
+        for (int i = 0; i < reluOutputs.size(); i++) {
+            Log.d("ScanFragment", "ReLU Output " + (i+1) + " dimensions: " + reluOutputs.get(i).numRows() + "x" + reluOutputs.get(i).numCols());
+        }
+
+        List<SimpleMatrix> pooledOutputs = new ArrayList<>();
+        for (SimpleMatrix reluOutput : reluOutputs) {
+            pooledOutputs.add(maxPooling(reluOutput, POOL_SIZE, POOL_SIZE));
+        }
+
+        // Log Pooling Outputs dimensions
+        for (int i = 0; i < pooledOutputs.size(); i++) {
+            Log.d("ScanFragment", "Pooling Output " + (i+1) + " dimensions: " + pooledOutputs.get(i).numRows() + "x" + pooledOutputs.get(i).numCols());
+        }
+
+        // Flatten and concatenate the pooled outputs
+        List<SimpleMatrix> flattenedOutputs = new ArrayList<>();
+        for (SimpleMatrix pooledOutput : pooledOutputs) {
+            flattenedOutputs.add(flattenMatrix(pooledOutput));
+        }
+
+        SimpleMatrix firstMatrix = flattenedOutputs.get(0);
+        // Start concatenation from the second matrix
+        SimpleMatrix concatenatedOutput = flattenedOutputs.get(0);
+        for (int i = 1; i < flattenedOutputs.size(); i++) {
+            concatenatedOutput = concatenatedOutput.concatRows(flattenedOutputs.get(i));
+        }
+
+
+        // Log dimensions after Flattening and Concatenation
+        Log.d("ScanFragment", "Concatenated Output dimensions: " + concatenatedOutput.numRows() + "x" + concatenatedOutput.numCols());
+
+        SimpleMatrix fcOutput = fullyConnected(concatenatedOutput, W_fc, b_fc);
 
         return fcOutput;
     }
+
+
+
 
     private void displayPrediction(SimpleMatrix fcOutput) {
         // Find the index of the maximum value in fcOutput
@@ -381,10 +455,14 @@ public class ScanFragment extends Fragment {
         // Feed to neural network and get the result
         SimpleMatrix result = forwardPass(inputMatrix);
 
-
-        displayPrediction(result);
-
+        if (result != null) {
+            displayPrediction(result);
+        } else {
+            // Handle the error by showing a message to the user
+            Toast.makeText(requireContext(), "Error processing the image. Please try again.", Toast.LENGTH_SHORT).show();
+        }
     }
+
 }
 
 
