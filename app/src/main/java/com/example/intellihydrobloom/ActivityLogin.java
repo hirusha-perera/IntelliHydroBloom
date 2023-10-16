@@ -17,8 +17,9 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class ActivityLogin extends AppCompatActivity {
 
-    private EditText txt_login_email, txt_login_password;
-    private FirebaseAuth mAuth;
+    EditText txt_login_email;
+    private EditText txt_login_password;
+    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +60,7 @@ public class ActivityLogin extends AppCompatActivity {
         });
     }
 
-    private void loginUser() {
+    void loginUser() {
         String email = txt_login_email.getText().toString().trim();
         String password = txt_login_password.getText().toString().trim();
 

@@ -25,9 +25,10 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class ActivityRegister extends AppCompatActivity {
 
-    private EditText txt_register_user_name, txt_register_email, txt_register_mobile_number, txt_register_farm_name, txt_register_location, txt_register_password, txt_register_confirmed_password;
+    protected EditText txt_register_user_name, txt_register_email, txt_register_mobile_number, txt_register_farm_name, txt_register_location, txt_register_password, txt_register_confirmed_password;
     private Spinner sp_register_country;
     private ProgressDialog loadingBar;
+    protected Button btn_register;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +99,7 @@ public class ActivityRegister extends AppCompatActivity {
         }
 
         if (TextUtils.isEmpty(txt_register_farm_name.getText().toString().trim())) {
-            txt_register_farm_name.setError("Farm Name is required.");
+            txt_register_farm_name.setError("Garden Type is required.");
             return false;
         }
 

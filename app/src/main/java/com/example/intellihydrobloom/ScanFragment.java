@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -33,6 +34,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -144,7 +146,7 @@ public class ScanFragment extends Fragment {
 
     private void downloadModel() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference modelRef = storage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/intelli-hydro-bloom-7b31f.appspot.com/o/model_params1.json?alt=media&token=1502bb7e-089c-4096-99c2-41b2dc3c71fb");
+        StorageReference modelRef = storage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/intelli-hydro-bloom-7b31f.appspot.com/o/IHB_Plantdis.json?alt=media&token=5b070147-e5cf-42dd-b6b9-fd4f320555ca");
 
         try {
             File localFile = File.createTempFile("model", "json");
@@ -324,6 +326,9 @@ public class ScanFragment extends Fragment {
         }
     }
 
+
+
+
     private SimpleMatrix reshape(SimpleMatrix matrix, int rows, int cols) {
         SimpleMatrix reshapedMatrix = new SimpleMatrix(rows, cols);
         int count = 0;
@@ -444,7 +449,7 @@ public class ScanFragment extends Fragment {
 
         // Display the prediction in a TextView
         TextView predictionTextView = getView().findViewById(R.id.tv_dis);
-        predictionTextView.setText("This Plant Have " + categories[predictedClassIndex]);
+        predictionTextView.setText("." + categories[predictedClassIndex]);
     }
     private void preprocessAndFeedToNN(Bitmap imageBitmap) {
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, IMG_SIZE, IMG_SIZE, false);
@@ -456,12 +461,64 @@ public class ScanFragment extends Fragment {
         SimpleMatrix result = forwardPass(inputMatrix);
 
         if (result != null) {
-            displayPrediction(result);
+            predictedCategory = getPredictedCategory(result);
+            // Display the prediction in a TextView
+            TextView predictionTextView = getView().findViewById(R.id.tv_dis);
+            predictionTextView.setText("" + predictedCategory);
         } else {
             // Handle the error by showing a message to the user
             Toast.makeText(requireContext(), "Error processing the image. Please try again.", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private String getPredictedCategory(SimpleMatrix fcOutput) {
+        // Find the index of the maximum value in fcOutput
+        int predictedClassIndex = 0;
+        double maxVal = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < fcOutput.numRows(); i++) {
+            double val = fcOutput.get(i, 0);
+            if (val > maxVal) {
+                maxVal = val;
+                predictedClassIndex = i;
+            }
+        }
+
+        // Return the prediction
+        return categories[predictedClassIndex];
+    }
+    private String predictedCategory;
+
+    private void uploadImageToFirebase() {
+        // Convert the image in ImageView to Bitmap
+        Bitmap bitmap = ((BitmapDrawable) ivPlantImage.getDrawable()).getBitmap();
+
+        // Convert the Bitmap to ByteArrayOutputStream
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        // Firebase storage instance
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+
+        // Create a reference to "uploadedImages/predictedCategory.jpg"
+        // (replace spaces and special characters to avoid issues with file names)
+        String imageName = predictedCategory.replaceAll("[^a-zA-Z0-9]", "_") + ".jpg";
+        StorageReference imageRef = storageRef.child("uploadedImages/" + imageName);
+
+        // Upload the byte array
+        imageRef.putBytes(data)
+                .addOnSuccessListener(taskSnapshot -> {
+                    // Handle successful uploads on complete
+                    Toast.makeText(requireContext(), "Image uploaded successfully!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(exception -> {
+                    // Handle unsuccessful uploads
+                    Toast.makeText(requireContext(), "Error in uploading image", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
 
 }
 
