@@ -146,7 +146,7 @@ public class ScanFragment extends Fragment {
 
     private void downloadModel() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference modelRef = storage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/intelli-hydro-bloom-7b31f.appspot.com/o/IHB_Plantdis.json?alt=media&token=5b070147-e5cf-42dd-b6b9-fd4f320555ca");
+        StorageReference modelRef = storage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/intelli-hydro-bloom-7b31f.appspot.com/o/IHB_Plantdispest.json?alt=media&token=7267c68e-86bb-40ca-ae38-c4caae456ec3");
 
         try {
             File localFile = File.createTempFile("model", "json");
@@ -329,7 +329,7 @@ public class ScanFragment extends Fragment {
 
 
 
-    private SimpleMatrix reshape(SimpleMatrix matrix, int rows, int cols) {
+    static SimpleMatrix reshape(SimpleMatrix matrix, int rows, int cols) {
         SimpleMatrix reshapedMatrix = new SimpleMatrix(rows, cols);
         int count = 0;
         for (int i = 0; i < matrix.numRows(); i++) {
@@ -356,7 +356,7 @@ public class ScanFragment extends Fragment {
     }
 
 
-    private SimpleMatrix flattenMatrix(SimpleMatrix matrix) {
+    SimpleMatrix flattenMatrix(SimpleMatrix matrix) {
         int rows = matrix.numRows();
         int cols = matrix.numCols();
         SimpleMatrix flattened = new SimpleMatrix(rows * cols, 1);
@@ -373,7 +373,7 @@ public class ScanFragment extends Fragment {
     private static final int IMG_SIZE = 64;
     private static final int POOL_SIZE = 2;
 
-    private String[] categories = {"Caterpillar attacks", "Healthy", "Nutrient deficiency", "Leaf spots", "Mealybugs", "Leaf spots"};
+    private String[] categories = {"Not a Plant", "Leaf Curl", "Leaf Spots", "Caterpillar Attack", "Healthy", "Mealy Bugs", "Leaf Eating Ladybird Attack", "Nutrients Defficiency"};
 
     private SimpleMatrix forwardPass(SimpleMatrix input) {
         // Check for null matrices
