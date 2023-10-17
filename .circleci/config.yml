@@ -1,9 +1,9 @@
-version: 2.1
+1version: 2.1
 
 executors:
   android-docker:
     docker:
-      - image: circleci/android:api-33
+      - image: circleci/android:api-31
 
 jobs:
   build:
