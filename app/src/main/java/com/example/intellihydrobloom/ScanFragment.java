@@ -42,12 +42,7 @@ import java.util.List;
 
 public class ScanFragment extends Fragment {
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-    private String mParam1;
-    private String mParam2;
 
-    //private SimpleMatrix W_conv;
     private List<SimpleMatrix> W_conv_list;
     private SimpleMatrix b_conv;
     private SimpleMatrix W_fc;
@@ -60,7 +55,7 @@ public class ScanFragment extends Fragment {
     private static final int PERMISSIONS_REQUEST_STORAGE = 1002;
 
     public ScanFragment() {
-        // Required empty public constructor
+
     }
 
     public List<SimpleMatrix> convolution(SimpleMatrix image, List<SimpleMatrix> filters, double bias) {
@@ -97,7 +92,7 @@ public class ScanFragment extends Fragment {
             for (int j = 0; j < outputSize; j++) {
                 SimpleMatrix subMatrix = input.extractMatrix(i * stride, i * stride + poolSize, j * stride, j * stride + poolSize);
 
-                // Manually find the max value in the subMatrix
+
                 double maxValue = Double.NEGATIVE_INFINITY;
                 for (int x = 0; x < subMatrix.numRows(); x++) {
                     for (int y = 0; y < subMatrix.numCols(); y++) {
@@ -112,7 +107,6 @@ public class ScanFragment extends Fragment {
         return output;
     }
 
-
     private SimpleMatrix fullyConnected(SimpleMatrix input, SimpleMatrix weights, SimpleMatrix biases) {
         Log.d("ScanFragment", "Input matrix dimensions: " + input.numRows() + "x" + input.numCols());
         Log.d("ScanFragment", "Weights matrix dimensions: " + weights.numRows() + "x" + weights.numCols());
@@ -120,27 +114,10 @@ public class ScanFragment extends Fragment {
     }
 
 
-
-
-
-    public static ScanFragment newInstance(String param1, String param2) {
-        ScanFragment fragment = new ScanFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
-        // Download and parse the model
         downloadModel();
     }
 
@@ -154,17 +131,17 @@ public class ScanFragment extends Fragment {
             modelRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    // Model downloaded successfully
+
                     parseAndUseModel(localFile);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Handle any errors
+
                 }
             });
         } catch (Exception e) {
-            // Handle exceptions
+
         }
     }
 
@@ -178,7 +155,6 @@ public class ScanFragment extends Fragment {
             String jsonString = new String(data, "UTF-8");
             JSONObject modelParams = new JSONObject(jsonString);
 
-            // Extracting W_conv
             JSONArray W_convJSON = modelParams.getJSONArray("W_conv");
             W_conv_list = new ArrayList<>();
             for (int i = 0; i < W_convJSON.length(); i++) {
@@ -194,7 +170,6 @@ public class ScanFragment extends Fragment {
                 W_conv_list.add(new SimpleMatrix(W_conv2D));
             };
 
-            // Extracting b_conv
             JSONArray b_convJSON = modelParams.getJSONArray("b_conv");
             double[][] b_conv_temp = new double[b_convJSON.length()][1];  // It's a 2D array
             for (int i = 0; i < b_convJSON.length(); i++) {
@@ -202,7 +177,6 @@ public class ScanFragment extends Fragment {
             }
             this.b_conv = new SimpleMatrix(b_conv_temp);
 
-            // Extracting W_fc
             JSONArray W_fcJSON = modelParams.getJSONArray("W_fc");
             double[][] W_fc_temp = new double[W_fcJSON.length()][];
             for (int i = 0; i < W_fcJSON.length(); i++) {
@@ -214,7 +188,6 @@ public class ScanFragment extends Fragment {
             }
             this.W_fc = new SimpleMatrix(W_fc_temp);
 
-            // Extracting b_fc
             JSONArray b_fcJSON = modelParams.getJSONArray("b_fc");
             double[][] b_fc_temp = new double[b_fcJSON.length()][1];  // It's a 2D array
             for (int i = 0; i < b_fcJSON.length(); i++) {
@@ -222,16 +195,12 @@ public class ScanFragment extends Fragment {
             }
             this.b_fc = new SimpleMatrix(b_fc_temp);
 
-            // Model parameters are now initialized and ready for use.
 
         } catch (Exception e) {
-            // Handle exceptions
+
             Log.e("ScanFragment", "Error parsing model: " + e.getMessage());
         }
     }
-
-
-
 
 
     @Override
@@ -290,7 +259,6 @@ public class ScanFragment extends Fragment {
         }
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -326,9 +294,6 @@ public class ScanFragment extends Fragment {
         }
     }
 
-
-
-
     static SimpleMatrix reshape(SimpleMatrix matrix, int rows, int cols) {
         SimpleMatrix reshapedMatrix = new SimpleMatrix(rows, cols);
         int count = 0;
@@ -355,7 +320,6 @@ public class ScanFragment extends Fragment {
         return matrix;
     }
 
-
     SimpleMatrix flattenMatrix(SimpleMatrix matrix) {
         int rows = matrix.numRows();
         int cols = matrix.numCols();
@@ -368,24 +332,20 @@ public class ScanFragment extends Fragment {
         return flattened;
     }
 
-
-
     private static final int IMG_SIZE = 64;
     private static final int POOL_SIZE = 2;
 
     private String[] categories = {"Not a Plant", "Leaf Curl", "Leaf Spots", "Caterpillar Attack", "Healthy", "Mealy Bugs", "Leaf Eating Ladybird Attack", "Nutrients Defficiency"};
 
     private SimpleMatrix forwardPass(SimpleMatrix input) {
-        // Check for null matrices
+
         if (W_conv_list == null || b_conv == null || W_fc == null || b_fc == null) {
             Log.e("ScanFragment", "Neural network parameters are not initialized");
             return null;
         }
 
-        // Implement the series of operations to get the neural network's output
         List<SimpleMatrix> convOutputs = convolution(input, W_conv_list, b_conv.get(0, 0));
 
-        // Log Convolutional Outputs dimensions
         for (int i = 0; i < convOutputs.size(); i++) {
             Log.d("ScanFragment", "Convolutional Output " + (i+1) + " dimensions: " + convOutputs.get(i).numRows() + "x" + convOutputs.get(i).numCols());
         }
@@ -395,7 +355,6 @@ public class ScanFragment extends Fragment {
             reluOutputs.add(relu(convOutput));
         }
 
-        // Log ReLU Outputs dimensions
         for (int i = 0; i < reluOutputs.size(); i++) {
             Log.d("ScanFragment", "ReLU Output " + (i+1) + " dimensions: " + reluOutputs.get(i).numRows() + "x" + reluOutputs.get(i).numCols());
         }
@@ -405,26 +364,22 @@ public class ScanFragment extends Fragment {
             pooledOutputs.add(maxPooling(reluOutput, POOL_SIZE, POOL_SIZE));
         }
 
-        // Log Pooling Outputs dimensions
         for (int i = 0; i < pooledOutputs.size(); i++) {
             Log.d("ScanFragment", "Pooling Output " + (i+1) + " dimensions: " + pooledOutputs.get(i).numRows() + "x" + pooledOutputs.get(i).numCols());
         }
 
-        // Flatten and concatenate the pooled outputs
         List<SimpleMatrix> flattenedOutputs = new ArrayList<>();
         for (SimpleMatrix pooledOutput : pooledOutputs) {
             flattenedOutputs.add(flattenMatrix(pooledOutput));
         }
 
         SimpleMatrix firstMatrix = flattenedOutputs.get(0);
-        // Start concatenation from the second matrix
         SimpleMatrix concatenatedOutput = flattenedOutputs.get(0);
         for (int i = 1; i < flattenedOutputs.size(); i++) {
             concatenatedOutput = concatenatedOutput.concatRows(flattenedOutputs.get(i));
         }
 
 
-        // Log dimensions after Flattening and Concatenation
         Log.d("ScanFragment", "Concatenated Output dimensions: " + concatenatedOutput.numRows() + "x" + concatenatedOutput.numCols());
 
         SimpleMatrix fcOutput = fullyConnected(concatenatedOutput, W_fc, b_fc);
@@ -432,11 +387,7 @@ public class ScanFragment extends Fragment {
         return fcOutput;
     }
 
-
-
-
     private void displayPrediction(SimpleMatrix fcOutput) {
-        // Find the index of the maximum value in fcOutput
         int predictedClassIndex = 0;
         double maxVal = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < fcOutput.numRows(); i++) {
@@ -447,32 +398,29 @@ public class ScanFragment extends Fragment {
             }
         }
 
-        // Display the prediction in a TextView
         TextView predictionTextView = getView().findViewById(R.id.tv_dis);
         predictionTextView.setText("." + categories[predictedClassIndex]);
     }
     private void preprocessAndFeedToNN(Bitmap imageBitmap) {
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, IMG_SIZE, IMG_SIZE, false);
 
-        // Convert the image to a matrix format
         SimpleMatrix inputMatrix = convertBitmapToMatrix(resizedBitmap);
 
-        // Feed to neural network and get the result
         SimpleMatrix result = forwardPass(inputMatrix);
 
         if (result != null) {
             predictedCategory = getPredictedCategory(result);
-            // Display the prediction in a TextView
+
             TextView predictionTextView = getView().findViewById(R.id.tv_dis);
             predictionTextView.setText("" + predictedCategory);
         } else {
-            // Handle the error by showing a message to the user
+
             Toast.makeText(requireContext(), "Error processing the image. Please try again.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private String getPredictedCategory(SimpleMatrix fcOutput) {
-        // Find the index of the maximum value in fcOutput
+
         int predictedClassIndex = 0;
         double maxVal = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < fcOutput.numRows(); i++) {
@@ -483,42 +431,35 @@ public class ScanFragment extends Fragment {
             }
         }
 
-        // Return the prediction
+
         return categories[predictedClassIndex];
     }
     private String predictedCategory;
 
     private void uploadImageToFirebase() {
-        // Convert the image in ImageView to Bitmap
+
         Bitmap bitmap = ((BitmapDrawable) ivPlantImage.getDrawable()).getBitmap();
 
-        // Convert the Bitmap to ByteArrayOutputStream
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
 
-        // Firebase storage instance
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
 
-        // Create a reference to "uploadedImages/predictedCategory.jpg"
-        // (replace spaces and special characters to avoid issues with file names)
         String imageName = predictedCategory.replaceAll("[^a-zA-Z0-9]", "_") + ".jpg";
         StorageReference imageRef = storageRef.child("uploadedImages/" + imageName);
 
-        // Upload the byte array
         imageRef.putBytes(data)
                 .addOnSuccessListener(taskSnapshot -> {
-                    // Handle successful uploads on complete
+
                     Toast.makeText(requireContext(), "Image uploaded successfully!", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(exception -> {
-                    // Handle unsuccessful uploads
+
                     Toast.makeText(requireContext(), "Error in uploading image", Toast.LENGTH_SHORT).show();
                 });
     }
-
-
 
 }
 
