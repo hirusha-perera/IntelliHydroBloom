@@ -171,7 +171,7 @@ public class ScanFragment extends Fragment {
             };
 
             JSONArray b_convJSON = modelParams.getJSONArray("b_conv");
-            double[][] b_conv_temp = new double[b_convJSON.length()][1];  // It's a 2D array
+            double[][] b_conv_temp = new double[b_convJSON.length()][1];
             for (int i = 0; i < b_convJSON.length(); i++) {
                 b_conv_temp[i][0] = b_convJSON.getJSONArray(i).getDouble(0);
             }
