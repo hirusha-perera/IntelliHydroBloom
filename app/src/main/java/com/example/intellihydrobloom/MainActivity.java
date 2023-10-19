@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Declare Firebase Authentication instance
+
     private FirebaseAuth mAuth;
 
     @Override
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize Firebase Authentication
+
         mAuth = FirebaseAuth.getInstance();
 
         CardView btnScan = findViewById(R.id.btn_scan);
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Set up logout for btn_notes
+
         CardView btnNotes = findViewById(R.id.btn_notes);
         btnNotes.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,12 +50,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logoutUser() {
-        // Sign out the user from Firebase Authentication
+
         mAuth.signOut();
 
-        // Redirect to ActivityLogin
         Intent loginIntent = new Intent(MainActivity.this, ActivityLogin.class);
         startActivity(loginIntent);
-        finish();  // Close the MainActivity
+        finish();
     }
 }
