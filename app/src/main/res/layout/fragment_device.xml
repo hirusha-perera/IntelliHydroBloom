@@ -3,12 +3,161 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DeviceFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".DeviceFragment"
+    android:layout_margin="0dp"
+    android:background="@color/white">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:paddingBottom="70dp"
+        android:layout_margin="24dp">
 
+        <TextView
+            android:id="@+id/txt_heading_device"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_device"
+            android:textColor="@color/h_orange"
+            android:layout_marginTop="24dp"
+            android:textSize="26sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <TextView
+            android:id="@+id/txt_heading_deviceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/device_name"
+            android:textColor="@color/h_light_gray"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_heading_device" />
+
+        <EditText
+            android:id="@+id/txt_deviceName"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/edittext_grey"
+            android:hint="@string/device_name1"
+            android:inputType="text"
+            android:padding="20dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/h_light_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_heading_deviceName" />
+
+        <TextView
+            android:id="@+id/txt_heading_plantType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/plant_type"
+            android:textColor="@color/h_light_gray"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_deviceName" />
+
+        <EditText
+            android:id="@+id/txt_plantType"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/edittext_grey"
+            android:hint="@string/ex_flowers_vegetables"
+            android:inputType="text"
+            android:padding="20dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/h_light_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_heading_plantType" />
+
+        <TextView
+            android:id="@+id/txt_heading_plantSpecies"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Plant Species"
+            android:textColor="@color/h_light_gray"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_plantType" />
+
+        <EditText
+            android:id="@+id/txt_plantSpecies"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/edittext_grey"
+            android:hint="@string/ex_tomato_rose"
+            android:inputType="text"
+            android:padding="20dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/h_light_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_heading_plantSpecies" />
+
+        <TextView
+            android:id="@+id/txt_heading_wifiSSID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/wifi_ssid"
+            android:textColor="@color/h_light_gray"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_plantSpecies" />
+
+        <EditText
+            android:id="@+id/txt_wifiSSID"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/edittext_grey"
+            android:hint="@string/your_wifi_ssid"
+            android:inputType="text"
+            android:padding="20dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/h_light_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_heading_wifiSSID" />
+
+        <TextView
+            android:id="@+id/txt_heading_wifiPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/your_wifi_password"
+            android:textColor="@color/h_light_gray"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_wifiSSID" />
+
+
+        <EditText
+            android:id="@+id/txt_wifiPassword"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/edittext_grey"
+            android:hint="@string/your_wifi_password"
+            android:inputType="text"
+            android:padding="20dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/h_light_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_heading_wifiPassword" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_vehicle_save"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/button_green"
+            android:text="@string/add"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_wifiPassword"
+            tools:ignore="DuplicateSpeakableTextCheck" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

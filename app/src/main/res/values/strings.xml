@@ -79,4 +79,14 @@
     <string name="enter_the_email_associated_with_your_account_and_we_ll_send_an_email_with_instructions_to_reset_your_password">Enter the email associated with your account and we’ll send an email with instructions to reset your password.</string>
     <string name="e_mail_addressfp">E-mail address</string>
     <string name="reset_password">Reset Password</string>
+    <string name="add_device">Add Device</string>
+    <string name="device_name">Device Name</string>
+    <string name="device_name1">Device Name</string>
+    <string name="plant_type">Plant Type</string>
+    <string name="ex_flowers_vegetables">Ex: Flowers, Vegetables,...</string>
+    <string name="ex_tomato_rose">Ex: Tomato, Rose</string>
+    <string name="wifi_ssid">Wifi SSID</string>
+    <string name="your_wifi_password">Your Wifi Password</string>
+    <string name="your_wifi_ssid">Your Wifi SSID</string>
+    <string name="add">Add</string>
 </resources>

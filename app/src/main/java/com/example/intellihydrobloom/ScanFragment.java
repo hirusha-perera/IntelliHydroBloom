@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -32,11 +34,12 @@ import com.google.firebase.storage.StorageReference;
 
 import org.ejml.simple.SimpleMatrix;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,14 +116,10 @@ public class ScanFragment extends Fragment {
         return weights.mult(input).plus(biases);
     }
 
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         downloadModel();
     }
-
     private void downloadModel() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference modelRef = storage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/intelli-hydro-bloom-7b31f.appspot.com/o/IHB_Plantdispest.json?alt=media&token=7267c68e-86bb-40ca-ae38-c4caae456ec3");
@@ -129,6 +128,7 @@ public class ScanFragment extends Fragment {
             File localFile = File.createTempFile("model", "json");
 
             modelRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
 
@@ -145,63 +145,49 @@ public class ScanFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void parseAndUseModel(File modelFile) {
         try {
-            FileInputStream fis = new FileInputStream(modelFile);
-            byte[] data = new byte[(int) modelFile.length()];
-            fis.read(data);
-            fis.close();
-
-            String jsonString = new String(data, "UTF-8");
+            String jsonString = new String(Files.readAllBytes(modelFile.toPath()), "UTF-8");
             JSONObject modelParams = new JSONObject(jsonString);
 
-            JSONArray W_convJSON = modelParams.getJSONArray("W_conv");
-            W_conv_list = new ArrayList<>();
-            for (int i = 0; i < W_convJSON.length(); i++) {
-                JSONArray subArray = W_convJSON.getJSONArray(i);
-                double[][] W_conv2D = new double[subArray.length()][];
-                for (int j = 0; j < subArray.length(); j++) {
-                    JSONArray subSubArray = subArray.getJSONArray(j);
-                    W_conv2D[j] = new double[subSubArray.length()];
-                    for (int k = 0; k < subSubArray.length(); k++) {
-                        W_conv2D[j][k] = subSubArray.getDouble(k);
-                    }
-                }
-                W_conv_list.add(new SimpleMatrix(W_conv2D));
-            };
-
-            JSONArray b_convJSON = modelParams.getJSONArray("b_conv");
-            double[][] b_conv_temp = new double[b_convJSON.length()][1];
-            for (int i = 0; i < b_convJSON.length(); i++) {
-                b_conv_temp[i][0] = b_convJSON.getJSONArray(i).getDouble(0);
-            }
-            this.b_conv = new SimpleMatrix(b_conv_temp);
-
-            JSONArray W_fcJSON = modelParams.getJSONArray("W_fc");
-            double[][] W_fc_temp = new double[W_fcJSON.length()][];
-            for (int i = 0; i < W_fcJSON.length(); i++) {
-                JSONArray subArray = W_fcJSON.getJSONArray(i);
-                W_fc_temp[i] = new double[subArray.length()];
-                for (int j = 0; j < subArray.length(); j++) {
-                    W_fc_temp[i][j] = subArray.getDouble(j);
-                }
-            }
-            this.W_fc = new SimpleMatrix(W_fc_temp);
-
-            JSONArray b_fcJSON = modelParams.getJSONArray("b_fc");
-            double[][] b_fc_temp = new double[b_fcJSON.length()][1];  // It's a 2D array
-            for (int i = 0; i < b_fcJSON.length(); i++) {
-                b_fc_temp[i][0] = b_fcJSON.getJSONArray(i).getDouble(0);
-            }
-            this.b_fc = new SimpleMatrix(b_fc_temp);
-
+            W_conv_list = parse2DJSONArrayToSimpleMatrixList(modelParams.getJSONArray("W_conv"));
+            b_conv = parse1DJSONArrayToSimpleMatrix(modelParams.getJSONArray("b_conv"));
+            W_fc = parse2DJSONArrayToSimpleMatrix(modelParams.getJSONArray("W_fc"));
+            b_fc = parse1DJSONArrayToSimpleMatrix(modelParams.getJSONArray("b_fc"));
 
         } catch (Exception e) {
-
             Log.e("ScanFragment", "Error parsing model: " + e.getMessage());
         }
     }
 
+    private List<SimpleMatrix> parse2DJSONArrayToSimpleMatrixList(JSONArray jsonArray) throws JSONException {
+        List<SimpleMatrix> matrixList = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            matrixList.add(parse2DJSONArrayToSimpleMatrix(jsonArray.getJSONArray(i)));
+        }
+        return matrixList;
+    }
+
+    private SimpleMatrix parse1DJSONArrayToSimpleMatrix(JSONArray jsonArray) throws JSONException {
+        double[][] matrixData = new double[jsonArray.length()][1];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            matrixData[i][0] = jsonArray.getJSONArray(i).getDouble(0);
+        }
+        return new SimpleMatrix(matrixData);
+    }
+
+    private SimpleMatrix parse2DJSONArrayToSimpleMatrix(JSONArray jsonArray) throws JSONException {
+        double[][] matrixData = new double[jsonArray.length()][];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONArray subArray = jsonArray.getJSONArray(i);
+            matrixData[i] = new double[subArray.length()];
+            for (int j = 0; j < subArray.length(); j++) {
+                matrixData[i][j] = subArray.getDouble(j);
+            }
+        }
+        return new SimpleMatrix(matrixData);
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -338,69 +324,54 @@ public class ScanFragment extends Fragment {
     private String[] categories = {"Not a Plant", "Leaf Curl", "Leaf Spots", "Caterpillar Attack", "Healthy", "Mealy Bugs", "Leaf Eating Ladybird Attack", "Nutrients Defficiency"};
 
     private SimpleMatrix forwardPass(SimpleMatrix input) {
-
         if (W_conv_list == null || b_conv == null || W_fc == null || b_fc == null) {
             Log.e("ScanFragment", "Neural network parameters are not initialized");
             return null;
         }
 
-        List<SimpleMatrix> convOutputs = convolution(input, W_conv_list, b_conv.get(0, 0));
+        List<SimpleMatrix> convOutputs = performConvolution(input);
+        List<SimpleMatrix> reluOutputs = applyReLU(convOutputs);
+        List<SimpleMatrix> pooledOutputs = performMaxPooling(reluOutputs);
+        SimpleMatrix concatenatedOutput = concatenateAndFlatten(pooledOutputs);
 
-        for (int i = 0; i < convOutputs.size(); i++) {
-            Log.d("ScanFragment", "Convolutional Output " + (i+1) + " dimensions: " + convOutputs.get(i).numRows() + "x" + convOutputs.get(i).numCols());
-        }
+        Log.d("ScanFragment", "Concatenated Output dimensions: " + concatenatedOutput.numRows() + "x" + concatenatedOutput.numCols());
 
+        return fullyConnected(concatenatedOutput, W_fc, b_fc);
+    }
+
+    private List<SimpleMatrix> performConvolution(SimpleMatrix input) {
+        return convolution(input, W_conv_list, b_conv.get(0, 0));
+    }
+
+    private List<SimpleMatrix> applyReLU(List<SimpleMatrix> convOutputs) {
         List<SimpleMatrix> reluOutputs = new ArrayList<>();
         for (SimpleMatrix convOutput : convOutputs) {
             reluOutputs.add(relu(convOutput));
         }
+        return reluOutputs;
+    }
 
-        for (int i = 0; i < reluOutputs.size(); i++) {
-            Log.d("ScanFragment", "ReLU Output " + (i+1) + " dimensions: " + reluOutputs.get(i).numRows() + "x" + reluOutputs.get(i).numCols());
-        }
-
+    private List<SimpleMatrix> performMaxPooling(List<SimpleMatrix> reluOutputs) {
         List<SimpleMatrix> pooledOutputs = new ArrayList<>();
         for (SimpleMatrix reluOutput : reluOutputs) {
             pooledOutputs.add(maxPooling(reluOutput, POOL_SIZE, POOL_SIZE));
         }
+        return pooledOutputs;
+    }
 
-        for (int i = 0; i < pooledOutputs.size(); i++) {
-            Log.d("ScanFragment", "Pooling Output " + (i+1) + " dimensions: " + pooledOutputs.get(i).numRows() + "x" + pooledOutputs.get(i).numCols());
-        }
-
+    private SimpleMatrix concatenateAndFlatten(List<SimpleMatrix> pooledOutputs) {
         List<SimpleMatrix> flattenedOutputs = new ArrayList<>();
         for (SimpleMatrix pooledOutput : pooledOutputs) {
             flattenedOutputs.add(flattenMatrix(pooledOutput));
         }
 
-        SimpleMatrix firstMatrix = flattenedOutputs.get(0);
         SimpleMatrix concatenatedOutput = flattenedOutputs.get(0);
         for (int i = 1; i < flattenedOutputs.size(); i++) {
             concatenatedOutput = concatenatedOutput.concatRows(flattenedOutputs.get(i));
         }
-
-
-        Log.d("ScanFragment", "Concatenated Output dimensions: " + concatenatedOutput.numRows() + "x" + concatenatedOutput.numCols());
-
-        SimpleMatrix fcOutput = fullyConnected(concatenatedOutput, W_fc, b_fc);
-
-        return fcOutput;
+        return concatenatedOutput;
     }
 
-    private void displayPrediction(SimpleMatrix fcOutput) {
-        int predictedClassIndex = 0;
-        double maxVal = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < fcOutput.numRows(); i++) {
-            double val = fcOutput.get(i, 0);
-            if (val > maxVal) {
-                maxVal = val;
-                predictedClassIndex = i;
-            }
-        }
-
-        TextView predictionTextView = getView().findViewById(R.id.tv_dis);
-        predictionTextView.setText("." + categories[predictedClassIndex]);
-    }
     private void preprocessAndFeedToNN(Bitmap imageBitmap) {
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, IMG_SIZE, IMG_SIZE, false);
 
@@ -435,7 +406,6 @@ public class ScanFragment extends Fragment {
         return categories[predictedClassIndex];
     }
     private String predictedCategory;
-
     private void uploadImageToFirebase() {
 
         Bitmap bitmap = ((BitmapDrawable) ivPlantImage.getDrawable()).getBitmap();

@@ -132,10 +132,10 @@ public class ActivityRegister extends AppCompatActivity {
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
-                            dbRef.child("username").setValue(txtUserName);
+                            dbRef.child("userName").setValue(txtUserName);
                             dbRef.child("email").setValue(txtEmail);
                             dbRef.child("mobile").setValue(txtMobile);
-                            dbRef.child("farmName").setValue(txtFarmName);
+                            dbRef.child("gardenType").setValue(txtFarmName);
                             dbRef.child("location").setValue(txtLocation);
                             dbRef.child("country").setValue(txtCountry);
 

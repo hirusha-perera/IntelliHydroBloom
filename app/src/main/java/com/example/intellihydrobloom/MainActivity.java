@@ -32,11 +32,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        CardView btnNotes = findViewById(R.id.btn_notes);
-        btnNotes.setOnClickListener(new View.OnClickListener() {
+        CardView btnSettings = findViewById(R.id.btn_settings);
+        btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 logoutUser();
+            }
+        });
+
+        CardView btnDevice = findViewById(R.id.btn_devices);
+        btnDevice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {openDeviceFragment();
             }
         });
     }
@@ -45,6 +52,14 @@ public class MainActivity extends AppCompatActivity {
         ScanFragment scanFragment = new ScanFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, scanFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    private void openDeviceFragment() {
+        DeviceFragment deviceFragment = new DeviceFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, deviceFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
